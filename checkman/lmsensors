@@ -1,0 +1,28 @@
+title: Check state of lmsensors output
+agents: linux
+author: Wouter de Geus <benv-check_mk@junerules.com>
+license: GPL
+distribution: http://notes.benv.junerules.com/lmsensors/
+description:
+ Checks the output of '{sensors}' from the lm_sensors package.
+ Note that configuration of alarms can (and should) be configured in the {sensors.conf} file that
+ belongs to your lm_sensors installation.
+
+examples:
+ Setting the sensors: 
+ For example if you have a lm85 chip, you can set the min fan speed of fan 2 by adding
+ a line in {/etc/sensors.conf} like this:
+
+  chip "lm85-*" "lm85b-*" "lm85c-*" "adm1027-*" "adt7463-*" "adt7468-*" "emc6d100-*" "emc6d102-*"
+  set fan2_min 1000
+
+ Or ignore specific checks like this:
+  chip "lm85-*" "lm85b-*" "lm85c-*" "adm1027-*" "adt7463-*" "adt7468-*" "emc6d100-*" "emc6d102-*"
+  ignore fan2
+
+inventory:
+ Each host which provides the section in the check_mk agent gets one Sensor_XXX service per reported sensor.
+perfdata: 
+ One variable: the current sensor value. This can be voltage, fan speed in rpm, temperature (either C or F), so
+ make sure to set it to your desired format through sensors.conf
+

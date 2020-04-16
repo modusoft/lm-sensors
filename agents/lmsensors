@@ -1,0 +1,12 @@
+#!/bin/sh
+echo '<<<lmsensors>>>'
+
+# lmsensors output:
+# in0:         +1.56 V  (min =  +0.00 V, max =  +3.32 V)   
+# agent output style:
+# in0 +1.56 V  min   +0.00 V max   +3.32 V
+
+if [ -x /usr/bin/sensors ]; then
+	# Perl here to get rid of the spaces in the part before ':', then drop some characters that are in the way.
+	/usr/bin/sensors -A | perl -pane 'if (m/^\s*([^:]+)\s*:\s*(.+?)?\s*$/){$k=$1;$v=$2;$k=~s/\s/_/g;$k=~s/[^a-z0-9_\-\.]//ig;$v=~s/[\(\),=]//g;$_=$k." ".$v.$/;}'
+fi
