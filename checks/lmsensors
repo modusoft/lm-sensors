@@ -27,12 +27,18 @@ def inventory_lmsensors_fan(info):
 def inventory_lmsensors_volt(info):
 	return parse_lmsensors('lmsensors.volt', info)
 
+def to_chip_sensor_name(chipname, sensorname):
+	return chipname + ' ' + sensorname
+
 def parse_lmsensors(checkname, info):
 	# [['lm85i2c02e'], ['in0', '+1.56', 'V', 'min', '+0.00', 'V', 'max', '+3.32', 'V'], ['Vcore', '+1.35', 'V', 'min', '+0.00', 'V', 'max', '+2.99', 'V'], ['+3.3V', '+3.33', 'V', 'min', '+0.00', 'V', 'max', '+4.38', 'V'], ['+5V', '+5.10', 'V', 'min', '+0.00', 'V', 'max', '+6.64', 'V'], ['+12V', '+12.00', 'V', 'min', '+0.00', 'V', 'max', '+15.94', 'V'], ['fan1', '1376', 'RPM', 'min', '0', 'RPM'], ['fan2', '0', 'RPM', 'min', '0', 'RPM'], ['fan3', '970', 'RPM', 'min', '0', 'RPM'], ['fan4', '1276', 'RPM', 'min', '0', 'RPM'], ['temp1', '+59.0', 'C', 'low', '128.0', 'C', 'high', '+127.0', 'C'], ['MB', 'Temp', '+50.0', 'C', 'low', '127.0', 'C', 'high', '+127.0', 'C'], ['temp3', '+43.0', 'C', 'low', '127.0', 'C', 'high', '+127.0', 'C'], ['cpu0vid', '+1.088', 'V']]
 	inventory = []
+	chipname = ''
 	for line in info:
-		if len(line) < 3:
-			continue # We don't use the chipname (yet) 'lm85i2c02e'
+		if len(line) < 3 and len(line) == 1:
+			chipname = line[0] # 'lm85i2c02e'
+			continue
+
 		sname = line[0] # 'in0', 'fan1', etc
 		# scur  = line[1] # current value, '+1.56'
 		stype = line[2] # 'V', 'RPM', 'C'
@@ -51,19 +57,25 @@ def parse_lmsensors(checkname, info):
 			elif line[6] == 'max' or line[6] == 'high':
 				smax = line[7]
 
+		chip_sensors_name = to_chip_sensor_name(chipname, sname)
+
 		if stype == 'V' and checkname == 'lmsensors.volt':
-			inventory.append( (sname, "", (smin, smax)) )
+			inventory.append( (chip_sensors_name, "", (smin, smax)) )
 		elif stype == 'C' and checkname == 'lmsensors.temp':
-			inventory.append( (sname, "", (smin, smax)) )
+			inventory.append( (chip_sensors_name, "", (smin, smax)) )
 		elif stype == 'RPM' and checkname == 'lmsensors.fan':
-			inventory.append( (sname, "", (smin, smax)) )
+			inventory.append( (chip_sensors_name, "", (smin, smax)) )
 	return inventory
 
 def check_lmsensors(item, params, info):
 	smin, smax = params
 	values = None
+	chipname = ''
+
 	for line in info:
-		if len(line) > 1 and line[0] == item:
+		if len(line) == 1:
+			chipname = line[0]
+		elif len(line) > 1 and to_chip_sensor_name(chipname, line[0]) == item:
 			values = line
 			break
 	if values == None:
