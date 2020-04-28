@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+# -*- coding: UTF-8 -*-
 # Example for output from agent
 # ---------------------------------------------------------
 # iwlwifi-virtual-0
@@ -17,55 +17,77 @@
 # Core_2 +41.0°C  high  +100.0°C crit  +100.0°C
 # Core_3 +41.0°C  high  +100.0°C crit  +100.0°C
 # ---------------------------------------------------------
-
-def inventory_lmsensors_temp(info):
-	return parse_lmsensors('lmsensors.temp', info)
-
-def inventory_lmsensors_fan(info):
-	return parse_lmsensors('lmsensors.fan', info)
-
-def inventory_lmsensors_volt(info):
-	return parse_lmsensors('lmsensors.volt', info)
-
 def to_chip_sensor_name(chipname, sensorname):
 	return chipname + ' ' + sensorname
 
-def parse_lmsensors(checkname, info):
-	# [['lm85i2c02e'], ['in0', '+1.56', 'V', 'min', '+0.00', 'V', 'max', '+3.32', 'V'], ['Vcore', '+1.35', 'V', 'min', '+0.00', 'V', 'max', '+2.99', 'V'], ['+3.3V', '+3.33', 'V', 'min', '+0.00', 'V', 'max', '+4.38', 'V'], ['+5V', '+5.10', 'V', 'min', '+0.00', 'V', 'max', '+6.64', 'V'], ['+12V', '+12.00', 'V', 'min', '+0.00', 'V', 'max', '+15.94', 'V'], ['fan1', '1376', 'RPM', 'min', '0', 'RPM'], ['fan2', '0', 'RPM', 'min', '0', 'RPM'], ['fan3', '970', 'RPM', 'min', '0', 'RPM'], ['fan4', '1276', 'RPM', 'min', '0', 'RPM'], ['temp1', '+59.0', 'C', 'low', '128.0', 'C', 'high', '+127.0', 'C'], ['MB', 'Temp', '+50.0', 'C', 'low', '127.0', 'C', 'high', '+127.0', 'C'], ['temp3', '+43.0', 'C', 'low', '127.0', 'C', 'high', '+127.0', 'C'], ['cpu0vid', '+1.088', 'V']]
+def my_save_float(value):
+	try:
+		return float(value)
+	except Exception as e:
+		return 0
+
+def get_index_of(src, value):
+	i = 0
+	for v in src:
+		if v == src:
+			return i
+		
+		i += 1
+	return -1
+
+def parse_min_max(minKeyWord, maxKeyWord, sensor_unit, info):
+	pre_parsed = parse_lmsensors(info, sensor_unit)
+
 	inventory = []
+
+	for sensor_chipname, line in pre_parsed:
+		min_value = None
+		max_value = None
+		
+		min_index = get_index_of(line, minKeyWord)
+		max_index = get_index_of(line, maxKeyWord)
+		
+		if min_index != -1 and len(line) >= (min_index + 1):
+			min_value = line[min_index + 1]
+		if max_index != -1 and len(line) >= (max_index + 1):
+			max_value = line[max_value + 1]
+		
+		inventory.append(sensor_chipname, (my_save_float(min_value), my_save_float(max_value)))
+		
+	return inventory
+
+
+def inventory_lmsensors_temp(info):
+	return parse_min_max('high', 'crit', 'C', info)
+
+def inventory_lmsensors_fan(info):
+	return parse_min_max('min', 'max', 'RPM', info)
+
+def inventory_lmsensors_volt(info):
+	return parse_min_max('min', 'max', 'V', info)
+
+# this method colleact all sensors with there value line and returns a tuple
+# with the chip_sensor name and the value with values from the agent starting
+# with the sensors name
+def parse_lmsensors(info, sensors_with_unit):
+	# [['lm85i2c02e'], ['in0', '+1.56', 'V', 'min', '+0.00', 'V', 'max', '+3.32', 'V'], ['Vcore', '+1.35', 'V', 'min', '+0.00', 'V', 'max', '+2.99', 'V'], ['+3.3V', '+3.33', 'V', 'min', '+0.00', 'V', 'max', '+4.38', 'V'], ['+5V', '+5.10', 'V', 'min', '+0.00', 'V', 'max', '+6.64', 'V'], ['+12V', '+12.00', 'V', 'min', '+0.00', 'V', 'max', '+15.94', 'V'], ['fan1', '1376', 'RPM', 'min', '0', 'RPM'], ['fan2', '0', 'RPM', 'min', '0', 'RPM'], ['fan3', '970', 'RPM', 'min', '0', 'RPM'], ['fan4', '1276', 'RPM', 'min', '0', 'RPM'], ['temp1', '+59.0', 'C', 'low', '128.0', 'C', 'high', '+127.0', 'C'], ['MB', 'Temp', '+50.0', 'C', 'low', '127.0', 'C', 'high', '+127.0', 'C'], ['temp3', '+43.0', 'C', 'low', '127.0', 'C', 'high', '+127.0', 'C'], ['cpu0vid', '+1.088', 'V']]
+	pre_parsed = []
 	chipname = ''
 	for line in info:
-		if len(line) < 3 and len(line) == 1:
+		if len(line) == 1:
 			chipname = line[0] # 'lm85i2c02e'
 			continue
 
-		sname = line[0] # 'in0', 'fan1', etc
+		sensor_name = line[0] # 'in0', 'fan1', etc
 		# scur  = line[1] # current value, '+1.56'
-		stype = line[2] # 'V', 'RPM', 'C'
+		sensor_unit = line[2] # 'V', 'RPM', 'C'
 
-		smin = None
-		smax = None
-		# See if sensor has a supplied min/max value
-		if len(line) > 5:
-			if line[3] == 'min' or line[3] == 'low':
-				smin = line[4]
-			elif line[3] == 'max' or line[3] == 'high':
-				smax = line[4]
-		if len(line) > 8:
-			if line[6] == 'min' or line[6] == 'low':
-				smin = line[7]
-			elif line[6] == 'max' or line[6] == 'high':
-				smax = line[7]
+		chip_sensors_name = to_chip_sensor_name(chipname, sensor_name)
 
-		chip_sensors_name = to_chip_sensor_name(chipname, sname)
+		if sensor_unit == sensors_with_unit:
+			pre_parsed.appen(chip_sensors_name, line)
 
-		if stype == 'V' and checkname == 'lmsensors.volt':
-			inventory.append( (chip_sensors_name, "", (smin, smax)) )
-		elif stype == 'C' and checkname == 'lmsensors.temp':
-			inventory.append( (chip_sensors_name, "", (smin, smax)) )
-		elif stype == 'RPM' and checkname == 'lmsensors.fan':
-			inventory.append( (chip_sensors_name, "", (smin, smax)) )
-	return inventory
+	return pre_parsed
 
 def check_lmsensors(item, params, info):
 	smin, smax = params
@@ -82,7 +104,7 @@ def check_lmsensors(item, params, info):
 		return (3, "UNKNOWN - sensor status not found in agent output")
 	value = float(values[1])
 	stype = values[2]
-	perfdata = [ ( item, value, "", savefloat(smax) ) ]
+	perfdata = [ ( item, value, "", my_save_float(smax) ) ]
 	if smax != None and value > float(smax):
 		return (2, "CRITICAL - Sensor value %s %s, which is bigger than %s" % (value, stype, smax), perfdata)
 	elif smin != None and value < float(smin):
