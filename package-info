@@ -14,6 +14,6 @@
  'name': 'lmsensors',
  'num_files': 8,
  'title': 'LMSensors',
- 'version': '2.0.1',
+ 'version': '2.0.2',
  'version.min_required': '1.1.10p1',
  'version.packaged': '1.6.0p8'}
