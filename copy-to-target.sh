@@ -1,6 +1,6 @@
 #!/bin/sh
 cp package-info ~/var/check_mk/packages/lmsensors
-cp agent/lmsensors ~/local/share/check_mk/agents/
+cp agents/lmsensors ~/local/share/check_mk/agents/
 cp checkman/lmsensors ~/local/share/check_mk/checkman/
 cp checks/lmsensors ~/local/share/check_mk/checks/
 
