@@ -52,7 +52,7 @@ def parse_min_max(minKeyWord, maxKeyWord, sensor_unit, info):
 		if max_index != -1 and len(line) >= (max_index + 1):
 			max_value = line[max_value + 1]
 		
-		inventory.append(sensor_chipname, (my_save_float(min_value), my_save_float(max_value)))
+		inventory.append((sensor_chipname, (my_save_float(min_value), my_save_float(max_value))))
 		
 	return inventory
 
@@ -85,7 +85,7 @@ def parse_lmsensors(info, sensors_with_unit):
 		chip_sensors_name = to_chip_sensor_name(chipname, sensor_name)
 
 		if sensor_unit == sensors_with_unit:
-			pre_parsed.appen(chip_sensors_name, line)
+			pre_parsed.append((chip_sensors_name, line))
 
 	return pre_parsed
 
