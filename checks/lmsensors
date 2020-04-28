@@ -128,11 +128,11 @@ def check_high_crit(item, params, info):
 	value = float(values[1])
 	stype = values[2]
 	perfdata = [ ( item, value, "", my_save_float(smax) ) ]
-	if smax != None and value > float(high):
-		return (1, "WAR - Sensor value %s %s, which is bigger than %s" % (value, stype, high), perfdata)
-	elif smin != None and value > float(cirt):
+
+	if crit != None and value > float(cirt):
 		return (2, "CRITICAL - Sensor value %s %s, which is bigger than %s" % (value, stype, crit), perfdata)
-	# TODO: warnings
+	elif high != None and value > float(high):
+		return (1, "WARN - Sensor value %s %s, which is bigger than %s" % (value, stype, high), perfdata)
 	else:
 		return (0, "OK - Sensor value is %s %s" % (value, stype), perfdata)
 
@@ -140,4 +140,5 @@ def check_high_crit(item, params, info):
 check_info['lmsensors.fan'] = (check_min_max, "Sensor %s", 1, inventory_lmsensors_fan)
 check_info['lmsensors.temp'] = (check_high_crit, "Sensor %s", 1, inventory_lmsensors_temp)
 check_info['lmsensors.volt'] = (check_min_max, "Sensor %s", 1, inventory_lmsensors_volt)
+
 
