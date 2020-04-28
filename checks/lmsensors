@@ -127,9 +127,9 @@ def check_high_crit(item, params, info):
 		return (3, "UNKNOWN - sensor status not found in agent output")
 	value = float(values[1])
 	stype = values[2]
-	perfdata = [ ( item, value, "", my_save_float(smax) ) ]
+	perfdata = [ ( item, value, "", my_save_float(high) ) ]
 
-	if crit != None and value > float(cirt):
+	if crit != None and value > float(crit):
 		return (2, "CRITICAL - Sensor value %s %s, which is bigger than %s" % (value, stype, crit), perfdata)
 	elif high != None and value > float(high):
 		return (1, "WARN - Sensor value %s %s, which is bigger than %s" % (value, stype, high), perfdata)
