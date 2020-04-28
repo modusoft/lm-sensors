@@ -14,5 +14,5 @@ build:
     - mv /omd/sites/cmk/lmsensors-*.mkp .
   artifacts:
     paths:
-      - proxmox-*.mkp 
+      - lmsensors-*.mkp 
 
