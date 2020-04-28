@@ -1,0 +1,18 @@
+stages:
+  - build
+
+build:
+  image: checkmk/check-mk-raw:1.6.0p11
+  stage: build
+  before_script:
+    - su -c "mkdir -p ~/var/check_mk/packages/" -s /bin/sh cmk
+    - su -c "./copy-to-target.sh" -s /bin/sh cmk
+  script:
+    - su -c 'source ~/.bashrc; cmk -P pack proxmox' -s /bin/bash cmk
+    # test if mkp package exists
+    - ls /omd/sites/cmk/proxmox-*.mkp
+    - mv /omd/sites/cmk/proxmox-*.mkp .
+  artifacts:
+    paths:
+      - proxmox-*.mkp 
+
