@@ -88,7 +88,7 @@ def parse_lmsensors(info, sensors_with_unit):
 
 	return pre_parsed
 
-def check_lmsensors(item, params, info):
+def check_min_max(item, params, info):
 	smin, smax = params
 	values = None
 	chipname = ''
@@ -112,7 +112,32 @@ def check_lmsensors(item, params, info):
 	else:
 		return (0, "OK - Sensor value is %s %s" % (value, stype), perfdata)
 
-check_info['lmsensors.fan'] = (check_lmsensors, "Sensor %s", 1, inventory_lmsensors_fan)
-check_info['lmsensors.temp'] = (check_lmsensors, "Sensor %s", 1, inventory_lmsensors_temp)
-check_info['lmsensors.volt'] = (check_lmsensors, "Sensor %s", 1, inventory_lmsensors_volt)
+def check_high_crit(item, params, info):
+	high, crit = params
+	values = None
+	chipname = ''
+
+	for line in info:
+		if len(line) == 1:
+			chipname = line[0]
+		elif len(line) > 1 and to_chip_sensor_name(chipname, line[0]) == item:
+			values = line
+			break
+	if values == None:
+		return (3, "UNKNOWN - sensor status not found in agent output")
+	value = float(values[1])
+	stype = values[2]
+	perfdata = [ ( item, value, "", my_save_float(smax) ) ]
+	if smax != None and value > float(high):
+		return (1, "WAR - Sensor value %s %s, which is bigger than %s" % (value, stype, high), perfdata)
+	elif smin != None and value > float(cirt):
+		return (2, "CRITICAL - Sensor value %s %s, which is bigger than %s" % (value, stype, crit), perfdata)
+	# TODO: warnings
+	else:
+		return (0, "OK - Sensor value is %s %s" % (value, stype), perfdata)
+
+
+check_info['lmsensors.fan'] = (check_min_max, "Sensor %s", 1, inventory_lmsensors_fan)
+check_info['lmsensors.temp'] = (check_high_crit, "Sensor %s", 1, inventory_lmsensors_temp)
+check_info['lmsensors.volt'] = (check_min_max, "Sensor %s", 1, inventory_lmsensors_volt)
 
