@@ -8,10 +8,10 @@ build:
     - su -c "mkdir -p ~/var/check_mk/packages/" -s /bin/sh cmk
     - su -c "./copy-to-target.sh" -s /bin/sh cmk
   script:
-    - su -c 'source ~/.bashrc; cmk -P pack proxmox' -s /bin/bash cmk
+    - su -c 'source ~/.bashrc; cmk -P pack lmsensors' -s /bin/bash cmk
     # test if mkp package exists
-    - ls /omd/sites/cmk/proxmox-*.mkp
-    - mv /omd/sites/cmk/proxmox-*.mkp .
+    - ls /omd/sites/cmk/lmsensors-*.mkp
+    - mv /omd/sites/cmk/lmsensors-*.mkp .
   artifacts:
     paths:
       - proxmox-*.mkp 
