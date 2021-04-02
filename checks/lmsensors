@@ -105,7 +105,7 @@ def check_min_max(item, params, info):
 		return (3, "UNKNOWN - sensor status not found in agent output")
 	value = float(values[1])
 	stype = values[2]
-	perfdata = [ ( item, value, "", my_save_float(smax) ) ]
+	perfdata = [ ( 'value', value, "", my_save_float(smax) ) ]
 	if smax != None and value > float(smax):
 		return (2, "CRITICAL - Sensor value %s %s, which is bigger than %s" % (value, stype, smax), perfdata)
 	elif smin != None and value < float(smin):
@@ -128,7 +128,7 @@ def check_high_crit(item, params, info):
 		return (3, "UNKNOWN - sensor status not found in agent output")
 	value = float(values[1])
 	stype = values[2]
-	perfdata = [ ( item, value, "", my_save_float(high) ) ]
+	perfdata = [ ( 'value', value, "", my_save_float(high) ) ]
 
 	if crit != None and value > float(crit):
 		return (2, "CRITICAL - Sensor value %s %s, which is bigger than %s" % (value, stype, crit), perfdata)
