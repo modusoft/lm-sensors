@@ -79,6 +79,7 @@ def parse_lmsensors(info, sensors_with_unit):
 
                 if len(line) < 3:
                     continue
+					
 		sensor_name = line[0] # 'in0', 'fan1', etc
 		# scur  = line[1] # current value, '+1.56'
 		sensor_unit = line[2] # 'V', 'RPM', 'C'
